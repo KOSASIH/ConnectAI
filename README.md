@@ -745,3 +745,107 @@ To assign roles to users, you would need to modify your user management endpoint
 To enforce role-based access control on the SCIM routes, you can use the `checkRole` middleware function on the routes that require specific roles. If a user doesn't have the required role, they will receive a 403 Forbidden response.
 
 Please note that this code is just a basic example and may need further customization based on your specific requirements.
+
+
+## Implementasi MFA Demo
+
+To enhance the OIDC authentication flow with support for multi-factor authentication (MFA), you can use the following code as an example:
+
+```javascript
+// Import necessary libraries
+const express = require('express');
+const session = require('express-session');
+const passport = require('passport');
+const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
+
+// Initialize the Express app
+const app = express();
+
+// Configure session middleware
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Configure passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Configure OIDC strategy
+passport.use(new OIDCStrategy({
+    identityMetadata: 'https://login.microsoftonline.com/{tenant-id}/v2.0/.well-known/openid-configuration',
+    clientID: 'your-client-id',
+    clientSecret: 'your-client-secret',
+    responseType: 'code',
+    responseMode: 'form_post',
+    redirectUrl: 'http://localhost:3000/auth/openid/return',
+    allowHttpForRedirectUrl: true,
+    scope: ['openid', 'profile']
+  },
+  (iss, sub, profile, accessToken, refreshToken, done) => {
+    // Perform additional authentication factor verification here
+    // For example, prompt user for SMS verification code or biometric authentication
+    // Verify the additional factor and call the 'done' function accordingly
+    // If the additional factor is verified, call 'done(null, profile)' to authenticate the user
+    // If the additional factor is not verified, call 'done(null, false)' to reject the authentication
+    // You can also pass additional user information in the 'profile' object
+    done(null, profile);
+  }
+));
+
+// Serialize user object to session
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+// Deserialize user object from session
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
+
+// Define the authentication route
+app.get('/auth/openid',
+  passport.authenticate('azuread-openidconnect', { failureRedirect: '/login' }),
+  (req, res) => {
+    res.redirect('/');
+  }
+);
+
+// Define the authentication callback route
+app.post('/auth/openid/return',
+  passport.authenticate('azuread-openidconnect', { failureRedirect: '/login' }),
+  (req, res) => {
+    res.redirect('/');
+  }
+);
+
+// Define a protected route that requires MFA
+app.get('/protected',
+  ensureAuthenticated,
+  (req, res) => {
+    res.send('Protected route');
+  }
+);
+
+// Middleware to ensure user is authenticated
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+```
+
+In this example, we use the `passport-azure-ad` library to implement the OIDC authentication flow. We configure the OIDC strategy with the necessary parameters, including the identity metadata, client ID, client secret, and redirect URL. 
+
+To implement multi-factor authentication (MFA), you need to add additional logic in the OIDC strategy's callback function. This is where you can prompt the user for additional authentication factors, such as SMS verification codes or biometric authentication. You can then verify the additional factor and call the `done` function accordingly to authenticate or reject the user.
+
+The code also includes a protected route (`/protected`) that requires the user to be authenticated. The `ensureAuthenticated` middleware is used to check if the user is authenticated before allowing access to the protected route.
+
+Please note that this code is a basic example, and you may need to modify it to fit your specific authentication requirements and integrate it with your existing OIDC and MFA providers.
