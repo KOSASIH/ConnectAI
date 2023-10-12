@@ -944,3 +944,71 @@ In this example, we use the `nodemailer` library to send emails and the `uuid` l
 To test this code, you can send a POST request to `/register` with the user's email address. The server will save the user details, generate an activation token, and send an activation email to the user. When the user clicks on the activation link, the server will handle the callback route `/activate/:token`, verify the token, and activate the user's account.
 
 Please note that this code is a simplified example and may require additional validation, error handling, and integration with your existing user management system.
+
+## CRUD Operation 
+
+Sure! Here's an example of how you can implement user role management in the SCIM API server using a framework like Express:
+
+First, let's set up the necessary routes for CRUD operations on roles:
+
+```javascript
+const express = require('express');
+const app = express();
+
+// Create a new role
+app.post('/roles', (req, res) => {
+  // Logic to create a new role
+});
+
+// Read a role by ID
+app.get('/roles/:id', (req, res) => {
+  // Logic to retrieve a role by ID
+});
+
+// Update a role by ID
+app.put('/roles/:id', (req, res) => {
+  // Logic to update a role by ID
+});
+
+// Delete a role by ID
+app.delete('/roles/:id', (req, res) => {
+  // Logic to delete a role by ID
+});
+
+// Assign a role to a user
+app.post('/users/:userId/roles/:roleId', (req, res) => {
+  const userId = req.params.userId;
+  const roleId = req.params.roleId;
+  // Logic to assign a role to a user
+});
+
+// Retrieve roles assigned to a user
+app.get('/users/:userId/roles', (req, res) => {
+  const userId = req.params.userId;
+  // Logic to retrieve roles assigned to a user
+});
+
+// Enforce role-based access control on SCIM routes
+app.use('/users', (req, res, next) => {
+  const userRoles = getUserRoles(req.userId); // Replace with your own logic to retrieve user roles
+  if (!userRoles.includes('admin')) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  next();
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
+```
+
+In the code above, we have defined routes for creating, reading, updating, and deleting roles. We also have routes for assigning roles to users and retrieving roles assigned to a user.
+
+To enforce role-based access control on the SCIM routes, we use the `app.use` middleware to check if the user has the necessary roles. In this example, we check if the user has the 'admin' role. If not, we return a 403 Forbidden error.
+
+Please note that this is just a basic example to demonstrate the implementation of user role management. You may need to customize the logic based on your specific requirements and the database or storage system you are using.
+
+Remember to replace the placeholder logic with your own implementation for creating, reading, updating, and deleting roles, as well as assigning roles to users and retrieving roles assigned to a user.
+
+Let me know if you need further assistance!
