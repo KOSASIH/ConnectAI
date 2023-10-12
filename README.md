@@ -5,6 +5,7 @@ Revolutionizing Identity with OIDC &amp; SCIM
 
 - [Description](#description)
 - [Vision And Mission](#vision-and-mission)
+- [Our Technologies](#our-technologies) 
 - [Tutorials](#tutorials) 
 
 # Description 
@@ -48,6 +49,32 @@ Our mission is to revolutionize identity management by developing "ConnectAI," a
 6. **Build a Thriving Community:** Foster a supportive user community, providing resources and training to maximize the benefits of "ConnectAI."
 
 Our vision and mission are centered on creating a future where users have full control over their digital identities, leveraging AI to enhance their online experiences, all while maintaining the highest standards of security, privacy, and ethics.
+
+# Our Technologies 
+
+"ConnectAI Technologies" is the organization or company responsible for the development, maintenance, and advancement of the "ConnectAI" project. This entity drives innovation in the field of identity management by combining Artificial Intelligence with recognized industry standards such as OpenID Connect (OIDC) and System for Cross-domain Identity Management (SCIM). Here's an overview of the technologies and areas of expertise associated with ConnectAI Technologies:
+
+1. **AI Integration:** ConnectAI Technologies specializes in integrating Artificial Intelligence into identity management, including advanced AI algorithms, machine learning, and natural language processing.
+
+2. **Identity Protocols:** The company is adept at implementing and customizing identity management protocols, especially OIDC and SCIM, to provide secure and efficient authentication and user identity management.
+
+3. **Security Measures:** ConnectAI Technologies is committed to data security and privacy, with expertise in encryption, secure data transmission, and compliance with data protection regulations.
+
+4. **User Experience Design:** The company focuses on creating user-centric design and intuitive interfaces, ensuring an exceptional user experience while leveraging AI capabilities.
+
+5. **Adaptive Security:** ConnectAI Technologies excels in developing adaptive security measures that adjust authentication levels based on user behavior and risk factors.
+
+6. **Ethical AI:** The company is at the forefront of ethical AI practices, actively addressing bias, privacy concerns, and fairness in AI algorithms.
+
+7. **Integration Expertise:** ConnectAI Technologies is skilled at integrating with third-party identity providers like Okta and Auth0, streamlining user access and enhancing security.
+
+8. **Scalability:** The company is capable of scaling the infrastructure to accommodate a growing user base and evolving technology demands.
+
+9. **Community Building:** ConnectAI Technologies fosters a community of users and enthusiasts who provide insights and support for the "ConnectAI" project.
+
+10. **Global Reach:** The company is prepared to expand its technology and services to serve users worldwide, including compliance with international data protection laws.
+
+ConnectAI Technologies is dedicated to pushing the boundaries of identity management by leveraging the power of AI, ethics, and robust security measures. Its commitment to user-centric design and innovation sets it apart as a leader in the field.
 
 # Tutorials
 
