@@ -1370,3 +1370,201 @@ To implement MFA, you can add additional logic inside the `OIDCStrategy` callbac
 The code also includes routes for authentication, authentication callback, protected dashboard, and login. The `/auth/openid` route initiates the OIDC authentication flow, and the `/auth/openid/return` route handles the authentication callback. The `/dashboard` route is protected and can only be accessed by authenticated users.
 
 Please note that this code is just an example and may need to be adapted to your specific OIDC provider and MFA requirements.
+
+## Demo App 
+
+```javascript
+// This code demonstrates how to implement user account activation and email verification in the SCIM API server
+
+// 1. Install the necessary packages
+// npm install nodemailer
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
+
+const app = express();
+app.use(bodyParser.json());
+
+// 2. Define a route for user registration
+app.post('/register', (req, res) => {
+  // Generate a unique activation token for the user
+  const activationToken = generateActivationToken();
+
+  // Save the user details and activation token in the database
+  const user = {
+    email: req.body.email,
+    activationToken: activationToken,
+    activated: false
+  };
+  saveUser(user);
+
+  // Send the account activation email to the user
+  sendActivationEmail(user.email, activationToken);
+
+  res.status(200).json({ message: 'Registration successful. Please check your email for activation instructions.' });
+});
+
+// 3. Define a route for email verification callback
+app.get('/activate', (req, res) => {
+  const activationToken = req.query.token;
+
+  // Find the user with the given activation token in the database
+  const user = findUserByActivationToken(activationToken);
+
+  if (user) {
+    // Activate the user account
+    user.activated = true;
+    activateUser(user);
+
+    res.status(200).json({ message: 'Account activated successfully. You can now log in.' });
+  } else {
+    res.status(400).json({ message: 'Invalid activation token.' });
+  }
+});
+
+// Helper function to generate a random activation token
+function generateActivationToken() {
+  // Implement your logic to generate a unique token
+  return 'random_token';
+}
+
+// Helper function to save the user details in the database
+function saveUser(user) {
+  // Implement your logic to save the user details
+}
+
+// Helper function to send the account activation email
+function sendActivationEmail(email, activationToken) {
+  // Create a nodemailer transporter
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'your_email@gmail.com',
+      pass: 'your_password'
+    }
+  });
+
+  // Define the email options
+  const mailOptions = {
+    from: 'your_email@gmail.com',
+    to: email,
+    subject: 'Account Activation',
+    text: `Please click on the following link to activate your account: http://example.com/activate?token=${activationToken}`
+  };
+
+  // Send the email
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log('Error sending activation email:', error);
+    } else {
+      console.log('Activation email sent:', info.response);
+    }
+  });
+}
+
+// Helper function to find a user by activation token in the database
+function findUserByActivationToken(activationToken) {
+  // Implement your logic to find the user by activation token
+  return null; // Return null if no user is found
+}
+
+// Helper function to activate the user account in the database
+function activateUser(user) {
+  // Implement your logic to activate the user account
+}
+
+// 4. Start the server
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+```
+
+This code sets up an Express server with routes for user registration and email verification. When a user registers, a unique activation token is generated and saved in the database along with the user details. An account activation email is sent to the user's email address with a link containing the activation token. When the user clicks on the activation link, the server verifies the activation token and activates the user's account.
+
+Please note that you need to replace `'your_email@gmail.com'` and `'your_password'` with your actual Gmail account credentials in the `sendActivationEmail` function. Additionally, you need to implement the database logic and replace the placeholder functions `saveUser`, `findUserByActivationToken`, and `activateUser` with your actual database operations.
+
+## User Password Demo 
+
+Sure! Here's an example of how you can implement user password recovery in the SCIM API server using a framework like Express:
+
+First, let's create the necessary routes for password recovery:
+
+```javascript
+const express = require('express');
+const router = express.Router();
+
+// Initiate password reset request
+router.post('/password-reset', (req, res) => {
+  // Handle password reset request
+});
+
+// Handle password reset callback
+router.post('/password-reset/callback', (req, res) => {
+  // Handle password reset callback
+});
+
+// Reset user password
+router.post('/password-reset/:userId', (req, res) => {
+  // Reset user password
+});
+
+module.exports = router;
+```
+
+Next, let's implement the logic for each route:
+
+```javascript
+// Initiate password reset request
+router.post('/password-reset', (req, res) => {
+  const { email } = req.body;
+
+  // Check if the email exists in the user database
+  const user = findUserByEmail(email);
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  // Generate a password reset token and send it to the user's email
+  const resetToken = generateResetToken();
+  sendResetTokenToEmail(user.email, resetToken);
+
+  // Store the reset token in the user database
+  storeResetToken(user.id, resetToken);
+
+  res.status(200).json({ message: 'Password reset email sent' });
+});
+
+// Handle password reset callback
+router.post('/password-reset/callback', (req, res) => {
+  const { resetToken } = req.body;
+
+  // Look up the user by the reset token
+  const user = findUserByResetToken(resetToken);
+
+  if (!user) {
+    return res.status(404).json({ message: 'Invalid reset token' });
+  }
+
+  // Verify the reset token and allow the user to reset their password
+  res.status(200).json({ message: 'Reset password' });
+});
+
+// Reset user password
+router.post('/password-reset/:userId', (req, res) => {
+  const { userId } = req.params;
+  const { password } = req.body;
+
+  // Update the user's password in the user database
+  updateUserPassword(userId, password);
+
+  res.status(200).json({ message: 'Password reset successful' });
+});
+```
+
+Please note that the code provided is a simplified example and may require modification based on your specific requirements and database setup. You'll also need to implement the necessary functions like `findUserByEmail`, `generateResetToken`, `sendResetTokenToEmail`, `storeResetToken`, `findUserByResetToken`, and `updateUserPassword` to interact with your database and send emails.
+
+Remember to handle security aspects like token expiration, secure token storage, and secure password handling to ensure the password recovery process is secure.
+
+I hope this helps you implement user password recovery in your SCIM API server! Let me know if you have any further questions.
