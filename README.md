@@ -325,3 +325,57 @@ app.listen(3000, () => {
 ```
 
 Please note that this code assumes you have installed the required dependencies (`express`, `express-session`, `passport`, `passport-openidconnect`, and `axios`). It also assumes you have set up the necessary routes and endpoints on your SCIM API server.
+
+## Midleware 
+
+To implement role-based access control (RBAC) in the SCIM API server, you can use middleware functions to enforce authorization based on the user's role. Here's an example code snippet using the Express framework:
+
+```javascript
+// Define roles and their corresponding permissions
+const roles = {
+  admin: ['create', 'read', 'update', 'delete'],
+  user: ['read', 'update']
+};
+
+// Middleware function to check if the user has the required role
+function checkRole(role) {
+  return (req, res, next) => {
+    // Get the user's role from the authentication process
+    const userRole = req.user.role;
+
+    // Check if the user has the required role
+    if (roles[userRole] && roles[userRole].includes(role)) {
+      next(); // User has the required role, proceed to the next middleware
+    } else {
+      res.status(403).json({ error: 'Access denied' }); // User doesn't have the required role
+    }
+  };
+}
+
+// Example route for creating a user (restricted to admins only)
+app.post('/users', checkRole('create'), (req, res) => {
+  // Create the user
+  // ...
+  res.status(201).json({ message: 'User created successfully' });
+});
+
+// Example route for updating a user (restricted to admins and users)
+app.put('/users/:id', checkRole('update'), (req, res) => {
+  // Update the user
+  // ...
+  res.json({ message: 'User updated successfully' });
+});
+
+// Example route for deleting a user (restricted to admins only)
+app.delete('/users/:id', checkRole('delete'), (req, res) => {
+  // Delete the user
+  // ...
+  res.json({ message: 'User deleted successfully' });
+});
+```
+
+In this example, the `checkRole` middleware function checks if the authenticated user has the required role to access a particular route. If the user has the required role, the middleware calls the `next` function to proceed to the next middleware or route handler. If the user doesn't have the required role, a 403 Forbidden response is sent.
+
+You can assign roles to users during user creation or update, and store the role information in the user's profile or database. When a user makes a request to a protected route, the `checkRole` middleware can retrieve the user's role and compare it with the required role for that route.
+
+Note that this code assumes that you have already implemented authentication using OIDC and obtained the user's profile, including their role, during the authentication process.
