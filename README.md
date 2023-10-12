@@ -4,7 +4,7 @@ Revolutionizing Identity with OIDC &amp; SCIM
 # Contents 
 
 - [Description](#description)
-- [Vision Anda Mission](#vision-and-mission)
+- [Vision And Mission](#vision-and-mission)
 - [Tutorials](#tutorials) 
 
 # Description 
