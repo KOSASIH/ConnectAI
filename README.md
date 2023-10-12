@@ -27,7 +27,7 @@ Key Features:
 
 "ConnectAI" is designed to offer a user-centric experience, ensuring that users have access to a secure and highly personalized identity management system. It's an exciting leap forward in the intersection of AI and identity management, providing not only a robust and secure environment but also intelligent insights to meet users' needs effectively.
 
-# Vision Anda Mission 
+# Vision And Mission 
 
 **Vision:**
 To create a world where identity management is secure, user-centric, and powered by cutting-edge Artificial Intelligence, enabling individuals and organizations to seamlessly and confidently connect to the digital world.
