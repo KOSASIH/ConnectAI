@@ -49,7 +49,7 @@ Our mission is to revolutionize identity management by developing "ConnectAI," a
 
 Our vision and mission are centered on creating a future where users have full control over their digital identities, leveraging AI to enhance their online experiences, all while maintaining the highest standards of security, privacy, and ethics.
 
-# Tutorial 
+# Tutorials
 
 ## Implement OIDC Authentication
 
