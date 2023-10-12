@@ -1012,3 +1012,110 @@ Please note that this is just a basic example to demonstrate the implementation 
 Remember to replace the placeholder logic with your own implementation for creating, reading, updating, and deleting roles, as well as assigning roles to users and retrieving roles assigned to a user.
 
 Let me know if you need further assistance!
+
+## Express Server Demo 
+
+```javascript
+// Import necessary libraries and modules
+const express = require('express');
+const app = express();
+
+// OIDC configuration
+const { Issuer, Strategy } = require('openid-client');
+const issuerUrl = 'https://your-oidc-provider.com';
+const clientId = 'your-client-id';
+const clientSecret = 'your-client-secret';
+const redirectUri = 'http://localhost:3000/callback';
+
+// MFA configuration
+const smsVerificationEndpoint = 'https://your-sms-verification-api.com/verify';
+const biometricAuthEndpoint = 'https://your-biometric-auth-api.com/auth';
+
+// Initialize the OIDC client
+(async () => {
+  const issuer = await Issuer.discover(issuerUrl);
+  const client = new issuer.Client({ client_id: clientId, client_secret: clientSecret });
+  
+  // Set up the OIDC authentication route
+  app.get('/login', (req, res) => {
+    const url = client.authorizationUrl({
+      redirect_uri: redirectUri,
+      scope: 'openid profile email',
+    });
+    res.redirect(url);
+  });
+
+  // Handle the OIDC callback
+  app.get('/callback', async (req, res) => {
+    const params = client.callbackParams(req);
+    const tokenSet = await client.callback(redirectUri, params, { nonce: req.session.nonce });
+    
+    // Prompt user for MFA
+    if (!tokenSet.claims.auth_time || !tokenSet.claims.amr.includes('mfa')) {
+      res.redirect('/mfa');
+      return;
+    }
+    
+    // Continue with authentication
+    // Store the access token and ID token in session or database for further use
+    
+    res.redirect('/profile');
+  });
+
+  // MFA route
+  app.get('/mfa', (req, res) => {
+    // Render a form to prompt user for additional authentication factor (e.g., SMS code or biometric authentication)
+    res.render('mfa');
+  });
+
+  // Handle MFA form submission
+  app.post('/mfa', async (req, res) => {
+    const { mfaMethod, mfaCode } = req.body;
+    
+    // Validate the MFA code or authenticate using biometric data
+    let mfaValidated = false;
+    if (mfaMethod === 'sms') {
+      const response = await fetch(smsVerificationEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({ code: mfaCode }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const result = await response.json();
+      mfaValidated = result.success;
+    } else if (mfaMethod === 'biometric') {
+      const response = await fetch(biometricAuthEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({ biometricData: req.body.biometricData }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const result = await response.json();
+      mfaValidated = result.success;
+    }
+    
+    if (mfaValidated) {
+      // Continue with authentication
+      // Store the access token and ID token in session or database for further use
+      
+      res.redirect('/profile');
+    } else {
+      // Handle MFA validation failure
+      res.redirect('/mfa?error=invalid_mfa');
+    }
+  });
+
+  // Start the server
+  app.listen(3000, () => {
+    console.log('Server started on http://localhost:3000');
+  });
+})();
+```
+
+In this code, we enhance the OIDC authentication flow by implementing support for multi-factor authentication (MFA). The code demonstrates how to prompt users for additional authentication factors, such as SMS verification codes or biometric authentication.
+
+The code sets up an Express server and includes the necessary OIDC configuration using the `openid-client` library. It also defines the MFA configuration, including the endpoints for SMS verification and biometric authentication.
+
+The `/login` route initiates the OIDC authentication flow by redirecting the user to the OIDC provider's authorization URL. After successful authentication, the `/callback` route handles the OIDC callback and checks if the user needs to provide an additional authentication factor. If so, it redirects the user to the `/mfa` route.
+
+The `/mfa` route renders a form to prompt the user for the additional authentication factor. The form submission is handled by the `/mfa` POST route, where the provided MFA code or biometric data is validated using the configured endpoints. If the validation is successful, the user is redirected to the `/profile` route.
+
+Please note that you need to replace the placeholder values (`your-oidc-provider.com`, `your-client-id`, `your-client-secret`, `your-sms-verification-api.com`, `your-biometric-auth-api.com`) with the actual values from your OIDC provider and MFA service. Additionally, you may need to install the required dependencies and set up the necessary views/templates for rendering the MFA form.
