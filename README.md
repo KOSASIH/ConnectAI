@@ -1371,7 +1371,7 @@ The code also includes routes for authentication, authentication callback, prote
 
 Please note that this code is just an example and may need to be adapted to your specific OIDC provider and MFA requirements.
 
-## Demo App 
+## User Activation Demo App 
 
 ```javascript
 // This code demonstrates how to implement user account activation and email verification in the SCIM API server
