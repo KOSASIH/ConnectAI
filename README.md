@@ -1484,7 +1484,7 @@ This code sets up an Express server with routes for user registration and email 
 
 Please note that you need to replace `'your_email@gmail.com'` and `'your_password'` with your actual Gmail account credentials in the `sendActivationEmail` function. Additionally, you need to implement the database logic and replace the placeholder functions `saveUser`, `findUserByActivationToken`, and `activateUser` with your actual database operations.
 
-## User Password Demo 
+## User Password Recovery Demo 
 
 Sure! Here's an example of how you can implement user password recovery in the SCIM API server using a framework like Express:
 
