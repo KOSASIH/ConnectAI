@@ -849,3 +849,98 @@ To implement multi-factor authentication (MFA), you need to add additional logic
 The code also includes a protected route (`/protected`) that requires the user to be authenticated. The `ensureAuthenticated` middleware is used to check if the user is authenticated before allowing access to the protected route.
 
 Please note that this code is a basic example, and you may need to modify it to fit your specific authentication requirements and integrate it with your existing OIDC and MFA providers.
+
+## Nodemailer Demo
+
+To implement user account activation and email verification in the SCIM API server, you can use a combination of email templates, token generation, and callback routes. Here's an example of how you can achieve this using the Express framework in Node.js:
+
+1. Install the required dependencies:
+```bash
+npm install express nodemailer uuid
+```
+
+2. Import the required modules and set up the necessary routes in your Express server:
+
+```javascript
+const express = require('express');
+const nodemailer = require('nodemailer');
+const { v4: uuidv4 } = require('uuid');
+
+const app = express();
+
+// Generate a unique activation token for each new user
+function generateActivationToken() {
+  return uuidv4();
+}
+
+// Send the activation email to the user
+function sendActivationEmail(email, activationToken) {
+  // Configure the email transport
+  const transporter = nodemailer.createTransport({
+    // Specify your email service provider details here
+    // For example, if using Gmail, you would provide SMTP details
+    // host: 'smtp.gmail.com',
+    // port: 587,
+    // secure: false,
+    // auth: {
+    //   user: 'your-email@gmail.com',
+    //   pass: 'your-email-password',
+    // },
+  });
+
+  // Define the email options
+  const mailOptions = {
+    from: 'your-email@gmail.com',
+    to: email,
+    subject: 'Account Activation',
+    text: `Click the following link to activate your account: http://your-website.com/activate/${activationToken}`,
+    html: `<p>Click the following link to activate your account: <a href="http://your-website.com/activate/${activationToken}">Activate Account</a></p>`,
+  };
+
+  // Send the email
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log('Error sending activation email:', error);
+    } else {
+      console.log('Activation email sent:', info.response);
+    }
+  });
+}
+
+// Handle the activation callback route
+app.get('/activate/:token', (req, res) => {
+  const { token } = req.params;
+
+  // TODO: Verify the activation token against your database or storage
+
+  // TODO: Activate the user account in your database or storage
+
+  res.send('Account activated successfully');
+});
+
+// Handle user registration route
+app.post('/register', (req, res) => {
+  const { email } = req.body;
+
+  // TODO: Save the user details in your database or storage
+
+  // Generate an activation token
+  const activationToken = generateActivationToken();
+
+  // Send the activation email to the user
+  sendActivationEmail(email, activationToken);
+
+  res.send('Registration successful. Please check your email for activation instructions.');
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
+});
+```
+
+In this example, we use the `nodemailer` library to send emails and the `uuid` library to generate unique activation tokens. You need to provide the appropriate email service provider details in the `sendActivationEmail` function.
+
+To test this code, you can send a POST request to `/register` with the user's email address. The server will save the user details, generate an activation token, and send an activation email to the user. When the user clicks on the activation link, the server will handle the callback route `/activate/:token`, verify the token, and activate the user's account.
+
+Please note that this code is a simplified example and may require additional validation, error handling, and integration with your existing user management system.
