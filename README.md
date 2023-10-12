@@ -1,6 +1,33 @@
 # ConnectAI
 Revolutionizing Identity with OIDC &amp; SCIM
 
+# Contents 
+
+- [Description](#description)
+- [Vision Anda Mission](#vision-and-mission) 
+
+# Description 
+
+"ConnectAI" is a cutting-edge web and mobile application that leverages the power of Artificial Intelligence (AI) to revolutionize identity management and user authentication. This innovative project seamlessly integrates with industry-standard identity protocols, including OpenID Connect (OIDC) and System for Cross-domain Identity Management (SCIM), while also interfacing with leading identity providers like Okta and Auth0.
+
+Key Features:
+
+1. **AI-Powered Authentication:** "ConnectAI" offers secure and intuitive user authentication with OIDC standards, ensuring that user access is protected and authorized.
+
+2. **Efficient Identity Management:** Using SCIM standards, the application enables the efficient creation, updating, and deletion of user identities across domains, streamlining identity management processes.
+
+3. **Intelligent Insights:** AI is at the core of the application, providing intelligent insights into user behavior and preferences. This includes predictive analytics and recommendation systems for a personalized user experience.
+
+4. **Adaptive Security:** The application employs adaptive security measures, adjusting authentication levels based on user behavior and potential risks, enhancing overall security.
+
+5. **Integration with Leading Providers:** Seamless integration with identity providers like Okta and Auth0 allows users to log in using their existing credentials, simplifying onboarding and improving security.
+
+6. **Ethical AI:** The project prioritizes ethical AI practices, addressing potential bias, privacy concerns, and fairness in AI algorithms.
+
+"ConnectAI" is designed to offer a user-centric experience, ensuring that users have access to a secure and highly personalized identity management system. It's an exciting leap forward in the intersection of AI and identity management, providing not only a robust and secure environment but also intelligent insights to meet users' needs effectively.
+
+# Vision Anda Mission
+
 # Tutorial 
 
 ## Implement OIDC Authentication
