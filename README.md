@@ -647,3 +647,101 @@ In the code above, we have implemented user password management in the SCIM API 
 3. **Enforce Password Complexity** (`POST /users/enforce-password-complexity`): This endpoint enforces password complexity rules. It validates the provided password against the defined complexity rules (e.g., minimum length, special characters, etc.). If the password meets the complexity requirements, a success response is returned. Otherwise, an error response is returned.
 
 Please note that the code provided is a sample implementation and should be adapted to fit your specific requirements and the framework you are using.
+
+## Management Role Demo
+
+Here's an example of how you can implement user role management in the SCIM API server using a framework like Express:
+
+```javascript
+const express = require('express');
+const app = express();
+
+// Define a roles array to store the roles
+let roles = [];
+
+// Endpoint for creating a new role
+app.post('/roles', (req, res) => {
+  const { roleName } = req.body;
+  
+  // Check if the role already exists
+  const roleExists = roles.find(role => role.name === roleName);
+  if (roleExists) {
+    return res.status(400).json({ error: 'Role already exists' });
+  }
+
+  // Create a new role and add it to the roles array
+  const newRole = { name: roleName };
+  roles.push(newRole);
+
+  return res.status(201).json(newRole);
+});
+
+// Endpoint for reading all roles
+app.get('/roles', (req, res) => {
+  return res.json(roles);
+});
+
+// Endpoint for updating a role
+app.put('/roles/:roleId', (req, res) => {
+  const { roleId } = req.params;
+  const { roleName } = req.body;
+
+  // Find the role to update
+  const roleToUpdate = roles.find(role => role.name === roleName);
+  if (!roleToUpdate) {
+    return res.status(404).json({ error: 'Role not found' });
+  }
+
+  // Update the role name
+  roleToUpdate.name = roleName;
+
+  return res.json(roleToUpdate);
+});
+
+// Endpoint for deleting a role
+app.delete('/roles/:roleId', (req, res) => {
+  const { roleId } = req.params;
+
+  // Find the role to delete
+  const roleIndex = roles.findIndex(role => role.id === roleId);
+  if (roleIndex === -1) {
+    return res.status(404).json({ error: 'Role not found' });
+  }
+
+  // Remove the role from the roles array
+  roles.splice(roleIndex, 1);
+
+  return res.sendStatus(204);
+});
+
+// Middleware function to check if the user has the required role
+function checkRole(roleName) {
+  return (req, res, next) => {
+    // Check if the user has the required role
+    const hasRole = req.user.roles.includes(roleName);
+    if (!hasRole) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    return next();
+  };
+}
+
+// Example route that requires the 'admin' role
+app.get('/admin-only', checkRole('admin'), (req, res) => {
+  return res.json({ message: 'Admin only route' });
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
+```
+
+In this code, we have endpoints for creating, reading, updating, and deleting roles. The roles are stored in an array called `roles`. We also have a middleware function `checkRole` that checks if the user has the required role before allowing access to certain routes.
+
+To assign roles to users, you would need to modify your user management endpoints to include a `roles` property in the user object. You can then update the user creation and update routes to handle assigning roles to users.
+
+To enforce role-based access control on the SCIM routes, you can use the `checkRole` middleware function on the routes that require specific roles. If a user doesn't have the required role, they will receive a 403 Forbidden response.
+
+Please note that this code is just a basic example and may need further customization based on your specific requirements.
