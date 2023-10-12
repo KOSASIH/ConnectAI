@@ -1568,3 +1568,190 @@ Please note that the code provided is a simplified example and may require modif
 Remember to handle security aspects like token expiration, secure token storage, and secure password handling to ensure the password recovery process is secure.
 
 I hope this helps you implement user password recovery in your SCIM API server! Let me know if you have any further questions.
+
+## User Session Demo 
+
+```javascript
+// Import necessary libraries and modules
+const express = require('express');
+const session = require('express-session');
+const { Issuer, Strategy } = require('openid-client');
+
+// Create an Express application
+const app = express();
+
+// Configure session middleware
+app.use(
+  session({
+    secret: 'your-session-secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: true, maxAge: 24 * 60 * 60 * 1000 }, // Set session expiration time to 24 hours
+  })
+);
+
+// OIDC configuration
+const oidcIssuerURL = 'https://your-oidc-issuer.com';
+const oidcClientID = 'your-oidc-client-id';
+const oidcClientSecret = 'your-oidc-client-secret';
+const oidcRedirectURI = 'https://your-app.com/callback';
+
+(async () => {
+  // Discover the OIDC issuer
+  const issuer = await Issuer.discover(oidcIssuerURL);
+
+  // Create an OpenID Connect client
+  const client = new issuer.Client({
+    client_id: oidcClientID,
+    client_secret: oidcClientSecret,
+    redirect_uris: [oidcRedirectURI],
+    response_types: ['code'],
+  });
+
+  // Configure the OIDC authentication strategy
+  const params = {
+    client_id: oidcClientID,
+    client_secret: oidcClientSecret,
+    redirect_uri: oidcRedirectURI,
+    response_type: 'code',
+    scope: 'openid profile',
+  };
+
+  const oidcStrategy = new Strategy({ client }, (tokenset, userinfo, done) => {
+    // Store the user session
+    req.session.tokenset = tokenset;
+    req.session.userinfo = userinfo;
+
+    return done(null, userinfo);
+  });
+
+  // Register the OIDC authentication strategy
+  passport.use('oidc', oidcStrategy);
+
+  // Create an OIDC login route
+  app.get('/login', passport.authenticate('oidc'));
+
+  // Create an OIDC callback route
+  app.get(
+    '/callback',
+    passport.authenticate('oidc', { successRedirect: '/profile', failureRedirect: '/login' })
+  );
+
+  // Create a user profile route
+  app.get('/profile', (req, res) => {
+    if (req.session.userinfo) {
+      res.send(`Welcome, ${req.session.userinfo.name}!`);
+    } else {
+      res.redirect('/login');
+    }
+  });
+
+  // Create a user logout route
+  app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+  });
+
+  // Start the Express server
+  app.listen(3000, () => {
+    console.log('Server running on port 3000');
+  });
+})();
+```
+
+This code sets up an Express server that implements user session management in the OIDC authentication flow. It uses the `express-session` middleware to manage user sessions and handle session expiration.
+
+The code includes the following endpoints:
+
+1. `/login`: Initiates the OIDC authentication flow by redirecting the user to the OIDC provider's login page.
+
+2. `/callback`: Handles the OIDC callback after successful authentication. It stores the user session, including the access token, in the session object.
+
+3. `/profile`: Displays the user profile if the user is authenticated. Otherwise, it redirects the user to the login page.
+
+4. `/logout`: Destroys the user session and redirects the user to the login page.
+
+Note that you need to replace the placeholder values (`your-oidc-issuer.com`, `your-oidc-client-id`, `your-oidc-client-secret`, `https://your-app.com/callback`) with your actual OIDC issuer URL, client ID, client secret, and callback URL.
+
+To use this code, you need to have the necessary dependencies installed (`express`, `express-session`, `openid-client`). You can install them using npm:
+
+```bash
+npm install express express-session openid-client
+```
+
+Once the dependencies are installed, you can run the server using the following command:
+
+```bash
+node server.js
+```
+
+Replace `server.js` with the name of the file where you saved the code. The server will start running on port 3000, and you can access it in your browser at `http://localhost:3000`.
+
+Please note that this code is a starting point and may need further customization based on your specific requirements and the OIDC provider you are using.
+
+## User Profile Management Demo 
+
+Sure! Here's an example of how you can implement user profile management in the SCIM API server using Express.js:
+
+```javascript
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+app.use(bodyParser.json());
+
+// In-memory user data
+let users = [
+  { id: 1, username: 'john.doe', email: 'john.doe@example.com', firstName: 'John', lastName: 'Doe' },
+  { id: 2, username: 'jane.smith', email: 'jane.smith@example.com', firstName: 'Jane', lastName: 'Smith' }
+];
+
+// Get user profile
+app.get('/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id);
+  const user = users.find(user => user.id === userId);
+
+  if (!user) {
+    res.status(404).json({ error: 'User not found' });
+  } else {
+    res.json(user);
+  }
+});
+
+// Update user profile
+app.put('/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id);
+  const userIndex = users.findIndex(user => user.id === userId);
+
+  if (userIndex === -1) {
+    res.status(404).json({ error: 'User not found' });
+  } else {
+    const updatedUser = { ...users[userIndex], ...req.body };
+    users[userIndex] = updatedUser;
+    res.json(updatedUser);
+  }
+});
+
+// Delete user profile
+app.delete('/users/:id', (req, res) => {
+  const userId = parseInt(req.params.id);
+  const userIndex = users.findIndex(user => user.id === userId);
+
+  if (userIndex === -1) {
+    res.status(404).json({ error: 'User not found' });
+  } else {
+    const deletedUser = users[userIndex];
+    users = users.filter(user => user.id !== userId);
+    res.json(deletedUser);
+  }
+});
+
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+```
+
+This code sets up the necessary routes for updating and deleting user profiles. The `GET /users/:id` endpoint retrieves the user profile based on the provided `id`. The `PUT /users/:id` endpoint updates the user profile with the provided attributes. The `DELETE /users/:id` endpoint deletes the user profile.
+
+You can test these endpoints using a tool like Postman or by sending HTTP requests to the corresponding URLs. Remember to replace the in-memory user data with your actual data storage mechanism.
+
+Feel free to modify the code to fit your specific requirements and integrate it into your existing SCIM API server.
