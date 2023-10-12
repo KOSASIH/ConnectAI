@@ -1194,4 +1194,179 @@ In the above code, we have implemented user account activation and email verific
 
 The activation link contains the activation token as a query parameter. When the user clicks on the activation link, the `/activate` route is triggered. In this route, we retrieve the activation token from the query parameter and find the corresponding user in the database. We then activate the user's account and send a response indicating that the account has been activated successfully.
 
+## Implementation Demo 
+
+Sure! Here's an example of how you can implement user role management in the SCIM API server using a framework like Express:
+
+First, let's set up the necessary routes for CRUD operations on role resources:
+
+```javascript
+const express = require('express');
+const app = express();
+
+// Create a new role
+app.post('/roles', (req, res) => {
+  // Code to create a new role
+});
+
+// Get all roles
+app.get('/roles', (req, res) => {
+  // Code to retrieve all roles
+});
+
+// Get a specific role by ID
+app.get('/roles/:id', (req, res) => {
+  // Code to retrieve a specific role by ID
+});
+
+// Update a role
+app.put('/roles/:id', (req, res) => {
+  // Code to update a role
+});
+
+// Delete a role
+app.delete('/roles/:id', (req, res) => {
+  // Code to delete a role
+});
+```
+
+Next, let's implement the logic to assign roles to users and enforce role-based access control on the SCIM routes:
+
+```javascript
+// Assign a role to a user
+app.post('/users/:id/roles', (req, res) => {
+  const userId = req.params.id;
+  const roleId = req.body.roleId;
+
+  // Code to assign the role to the user
+});
+
+// Enforce role-based access control on SCIM routes
+app.use('/users', (req, res, next) => {
+  const userId = req.params.id;
+  const userRoles = getUserRoles(userId);
+
+  // Check if the user has the necessary role to access the route
+  if (userRoles.includes('admin')) {
+    // User has admin role, allow access
+    next();
+  } else {
+    // User does not have the necessary role, deny access
+    res.status(403).json({ error: 'Access denied' });
+  }
+});
+
+// Helper function to retrieve user roles
+function getUserRoles(userId) {
+  // Code to retrieve user roles from the database
+  // Return an array of role names
+}
+```
+
+In the above code, we have added routes for creating, reading, updating, and deleting roles. We also have a route to assign roles to users. Additionally, we have implemented role-based access control on the SCIM routes using the `app.use` middleware. This ensures that only users with the necessary role (in this case, "admin") can access the protected routes.
+
+Please note that the code provided is a basic example and may need to be adapted to fit your specific requirements and database setup.
+
+
 Please note that you need to configure the email provider settings (e.g., Gmail) and provide your email address and password in the code to send activation emails successfully.
+
+## Authentication Demo 
+
+To enhance the OIDC authentication flow by implementing support for multi-factor authentication (MFA), you can use the following code as an example. This code demonstrates how to prompt users for additional authentication factors, such as SMS verification codes or biometric authentication.
+
+```javascript
+// Import required libraries
+const express = require('express');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const passport = require('passport');
+const OIDCStrategy = require('passport-azure-ad').OIDCStrategy;
+
+// Initialize Express app
+const app = express();
+
+// Configure session middleware
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
+
+// Configure body-parser middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// Configure passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Configure OIDC strategy
+passport.use(new OIDCStrategy({
+    identityMetadata: 'https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration',
+    clientID: 'your-client-id',
+    responseType: 'code',
+    responseMode: 'form_post',
+    redirectUrl: 'http://localhost:3000/auth/openid/return',
+    allowHttpForRedirectUrl: true,
+    clientSecret: 'your-client-secret',
+    validateIssuer: false,
+    passReqToCallback: true,
+    scope: ['openid', 'profile']
+  },
+  (req, iss, sub, profile, accessToken, refreshToken, done) => {
+    // Perform additional authentication factor verification here
+    // For example, prompt the user for an SMS verification code or biometric authentication
+    
+    // If MFA is successful, call the done() function with the user object
+    done(null, profile);
+  }
+));
+
+// Serialize and deserialize user
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
+
+// Define authentication route
+app.get('/auth/openid', passport.authenticate('azuread-openidconnect'));
+
+// Define authentication callback route
+app.post('/auth/openid/return', passport.authenticate('azuread-openidconnect', { failureRedirect: '/login' }), (req, res) => {
+  // Authentication successful, redirect to the desired page
+  res.redirect('/dashboard');
+});
+
+// Define protected route
+app.get('/dashboard', (req, res) => {
+  // Check if the user is authenticated
+  if (req.isAuthenticated()) {
+    // User is authenticated, render the dashboard
+    res.send('Dashboard');
+  } else {
+    // User is not authenticated, redirect to the login page
+    res.redirect('/login');
+  }
+});
+
+// Define login route
+app.get('/login', (req, res) => {
+  res.send('Login');
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+```
+
+In this code, we are using the `passport-azure-ad` library to implement the OIDC authentication flow. The `OIDCStrategy` is configured with the necessary parameters, including the client ID, client secret, and redirect URL.
+
+To implement MFA, you can add additional logic inside the `OIDCStrategy` callback function. This is where you can prompt the user for an SMS verification code or perform biometric authentication. If the MFA is successful, you can call the `done()` function with the user object to complete the authentication process.
+
+The code also includes routes for authentication, authentication callback, protected dashboard, and login. The `/auth/openid` route initiates the OIDC authentication flow, and the `/auth/openid/return` route handles the authentication callback. The `/dashboard` route is protected and can only be accessed by authenticated users.
+
+Please note that this code is just an example and may need to be adapted to your specific OIDC provider and MFA requirements.
