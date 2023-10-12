@@ -531,4 +531,119 @@ Please note that this code assumes you have already set up the necessary depende
 
 This code demonstrates how to handle token expiration and automatically refresh the access token using the refresh token in the OIDC authentication flow.
 
-##
+## SCIM API Server Demo 
+
+```javascript
+const express = require('express');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
+
+const app = express();
+app.use(express.json());
+
+// Sample user data
+let users = [
+  {
+    id: '1',
+    username: 'john.doe',
+    password: '$2b$10$Q7T6K8fXeD9cZQy4Lk8F7e2E9OJZC6uOqY9nO3I4K6nvV0ZzFJr1m', // hashed password: 'password'
+    email: 'john.doe@example.com',
+    roles: ['admin'],
+  },
+  {
+    id: '2',
+    username: 'jane.doe',
+    password: '$2b$10$Q7T6K8fXeD9cZQy4Lk8F7e2E9OJZC6uOqY9nO3I4K6nvV0ZzFJr1m', // hashed password: 'password'
+    email: 'jane.doe@example.com',
+    roles: ['user'],
+  },
+];
+
+// Middleware to authenticate requests using OIDC access token
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
+
+// Endpoint to reset user password
+app.post('/users/:userId/reset-password', authenticateToken, (req, res) => {
+  const { userId } = req.params;
+  const { currentPassword, newPassword } = req.body;
+
+  const user = users.find((user) => user.id === userId);
+  if (!user) return res.sendStatus(404);
+
+  // Check if the current password matches the stored hashed password
+  bcrypt.compare(currentPassword, user.password, (err, result) => {
+    if (err) return res.sendStatus(500);
+    if (!result) return res.sendStatus(401);
+
+    // Generate a new hashed password
+    bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+      if (err) return res.sendStatus(500);
+
+      // Update the user's password
+      user.password = hashedPassword;
+      res.sendStatus(204);
+    });
+  });
+});
+
+// Endpoint to change user password
+app.put('/users/:userId/change-password', authenticateToken, (req, res) => {
+  const { userId } = req.params;
+  const { newPassword } = req.body;
+
+  const user = users.find((user) => user.id === userId);
+  if (!user) return res.sendStatus(404);
+
+  // Generate a new hashed password
+  bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+    if (err) return res.sendStatus(500);
+
+    // Update the user's password
+    user.password = hashedPassword;
+    res.sendStatus(204);
+  });
+});
+
+// Endpoint to enforce password complexity rules
+app.post('/users/enforce-password-complexity', (req, res) => {
+  const { password } = req.body;
+
+  // Check password complexity rules (e.g., minimum length, special characters, etc.)
+  // Implement your own password complexity rules here
+
+  // Return appropriate response based on password complexity
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+  }
+
+  // Additional complexity rules can be added here
+
+  res.sendStatus(204);
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server started on port 3000');
+});
+```
+
+In the code above, we have implemented user password management in the SCIM API server. It includes three endpoints:
+
+1. **Reset User Password** (`POST /users/:userId/reset-password`): This endpoint allows a user to reset their password by providing their current password and a new password. The current password is compared with the stored hashed password to verify the user's identity. If the current password matches, the new password is hashed and stored as the user's new password.
+
+2. **Change User Password** (`PUT /users/:userId/change-password`): This endpoint allows a user to change their password by providing a new password. The new password is hashed and stored as the user's new password.
+
+3. **Enforce Password Complexity** (`POST /users/enforce-password-complexity`): This endpoint enforces password complexity rules. It validates the provided password against the defined complexity rules (e.g., minimum length, special characters, etc.). If the password meets the complexity requirements, a success response is returned. Otherwise, an error response is returned.
+
+Please note that the code provided is a sample implementation and should be adapted to fit your specific requirements and the framework you are using.
