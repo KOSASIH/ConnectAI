@@ -530,3 +530,5 @@ initializeOIDCClient();
 Please note that this code assumes you have already set up the necessary dependencies and middleware (e.g., express-session) for session management. Also, make sure to replace the placeholder values (`https://your-oidc-provider.com`, `your-client-id`, `your-client-secret`, `http://localhost:3000/callback`, `https://your-scim-server.com`, `{userId}`, etc.) with the actual values from your OIDC provider and SCIM server.
 
 This code demonstrates how to handle token expiration and automatically refresh the access token using the refresh token in the OIDC authentication flow.
+
+##
